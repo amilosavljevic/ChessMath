@@ -2,3 +2,6 @@
 /Logs/**
 /UserSettings/**
 /**.csproj
+/Temp/**
+/obj/Debug/**
+/.idea/**

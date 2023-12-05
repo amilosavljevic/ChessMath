@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
-namespace King.Shared.Common.SettingsProviderNs
+namespace ChessMath.Shared.Common.SettingsProviderNs
 {
 	/// <summary>
 	/// Utility class to help with JSON deserialization and applying overrides to schema.

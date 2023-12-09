@@ -63,10 +63,12 @@ public class GreaterOrLessController : MonoBehaviour
         resultLabel.gameObject.SetActive(true);
         resultLabel.text = IsSuccess ? "Success!" : "Fail!";
         yield return new WaitForSeconds(2);
+        var anim = resultLabel.GetComponent<AnimateScale>();
+        anim.ResetState();
         resultLabel.gameObject.SetActive(false);
     }
 
-    public bool IsSuccess => 
+    private bool IsSuccess => 
         result switch
         {
             RelationType.Less => leftNumber < rightNumber,

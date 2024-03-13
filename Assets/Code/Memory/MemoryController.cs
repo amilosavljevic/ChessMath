@@ -1,19 +1,71 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class MemoryController: MonoBehaviour
 {
     [SerializeField] private Button tileButtonPrefab;
     [SerializeField] private Transform tileHolder;
+    [SerializeField] private TMP_Text countLabel;
+
     private readonly List<MemoryTileController> buttonControllers = new List<MemoryTileController>();
     private MemoryTileController lastClickedButton;
+    private MemoryTileController firstSelectedButton;
+    private MemoryTileController secondsSelectedButton;
+    private int tryCount;
     
     private IEnumerator Start()
     {
         var buttonValues = GenerateValues();
 
+        InstantiateTiles(buttonValues);
+
+        //while (buttons.Count > 0)
+        while (buttonControllers.Count > 0)
+        {
+            yield return new WaitUntil(() => lastClickedButton != null);
+            firstSelectedButton = lastClickedButton;
+            lastClickedButton = null;
+
+            yield return new WaitUntil(() => lastClickedButton != null);
+            secondsSelectedButton = lastClickedButton;
+            lastClickedButton = null;
+
+            ToggleAllButtonsInteraction(false);
+            yield return new WaitForSeconds(1);
+            ToggleAllButtonsInteraction(true);
+
+            tryCount++;
+            countLabel.text = tryCount.ToString();
+
+            if (firstSelectedButton.ButtonHiddenValue == secondsSelectedButton.ButtonHiddenValue)
+            {
+                buttonControllers.Remove(firstSelectedButton);
+                buttonControllers.Remove(secondsSelectedButton);
+
+                Destroy(firstSelectedButton.gameObject);
+                Destroy(secondsSelectedButton.gameObject);
+            }
+            else
+            {
+                firstSelectedButton.HideValue();
+                secondsSelectedButton.HideValue();
+            }
+
+            firstSelectedButton = null;
+            secondsSelectedButton = null;
+        }
+
+        // Game ended
+        MainPopup.Open("Igra Memorije", $"Kraj igre. Pobeda u {tryCount} koraka.", "Kreni ponovo", OnRetryButtonClicked);
+    }
+
+    private void InstantiateTiles(List<int> buttonValues)
+    {
         for (var i = 0; i < 16; i++)
         {
             var button = Instantiate(tileButtonPrefab, tileHolder);
@@ -25,42 +77,21 @@ public class MemoryController: MonoBehaviour
             button.onClick.AddListener(() => OnButtonClicked(controller));
         }
 
-        var grid = tileHolder.GetComponent <GridLayoutGroup>();
+        var grid = tileHolder.GetComponent<GridLayoutGroup>();
         LayoutRebuilder.ForceRebuildLayoutImmediate(tileHolder.GetComponent<RectTransform>());
         grid.enabled = false;
-
-        //while (buttons.Count > 0)
-        while (true)
-        {
-            yield return new WaitUntil(() => lastClickedButton != null);
-            var button1Controller = lastClickedButton;
-            lastClickedButton = null;
-
-            yield return new WaitUntil(() => lastClickedButton != null);
-            var button2Controller = lastClickedButton;
-            lastClickedButton = null;
-
-            ToggleAllButtonsInteraction(false);
-            yield return new WaitForSeconds(2);
-            ToggleAllButtonsInteraction(true);
-
-            if (button1Controller.ButtonHiddenValue == button2Controller.ButtonHiddenValue)
-            {
-                buttonControllers.Remove(button1Controller);
-                buttonControllers.Remove(button2Controller);
-
-                Destroy(button1Controller.gameObject);
-                Destroy(button2Controller.gameObject);
-            }
-            else
-            {
-                button1Controller.HideValue();
-                button2Controller.HideValue();
-            }
-        }
-
-        yield break;
     }
+
+    private void OnButtonClicked(MemoryTileController controller)
+    {
+        if (controller == firstSelectedButton)
+            return;
+
+        lastClickedButton = controller;
+        controller.ShowValue();
+    }
+
+    private void OnRetryButtonClicked() => SceneManager.LoadScene("Memory");
 
     private void ToggleAllButtonsInteraction(bool isClickable)
     {
@@ -70,11 +101,7 @@ public class MemoryController: MonoBehaviour
         }
     }
 
-    private void OnButtonClicked(MemoryTileController controller)
-    {
-        lastClickedButton = controller;
-        controller.ShowValue();
-    }
+
 
     private List<int> GenerateValues()
     {

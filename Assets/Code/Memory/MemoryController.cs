@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Solitaire.Common.Coroutines;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+using WaitUntil = UnityEngine.WaitUntil;
 
 public class MemoryController: MonoBehaviour
 {
@@ -23,8 +25,7 @@ public class MemoryController: MonoBehaviour
         var buttonValues = GenerateValues();
 
         InstantiateTiles(buttonValues);
-
-        //while (buttons.Count > 0)
+        
         while (buttonControllers.Count > 0)
         {
             yield return new WaitUntil(() => lastClickedButton != null);
@@ -36,8 +37,6 @@ public class MemoryController: MonoBehaviour
             lastClickedButton = null;
 
             ToggleAllButtonsInteraction(false);
-            yield return new WaitForSeconds(1);
-            ToggleAllButtonsInteraction(true);
 
             tryCount++;
             countLabel.text = tryCount.ToString();
@@ -46,22 +45,42 @@ public class MemoryController: MonoBehaviour
             {
                 buttonControllers.Remove(firstSelectedButton);
                 buttonControllers.Remove(secondsSelectedButton);
+                
+                yield return PlayMatchAnimation();
 
                 Destroy(firstSelectedButton.gameObject);
                 Destroy(secondsSelectedButton.gameObject);
             }
             else
             {
+                yield return new WaitForSeconds(1);
                 firstSelectedButton.HideValue();
                 secondsSelectedButton.HideValue();
             }
-
+            
             firstSelectedButton = null;
             secondsSelectedButton = null;
+            ToggleAllButtonsInteraction(true);
         }
 
         // Game ended
         MainPopup.Open("Igra Memorije", $"Kraj igre. Pobeda u {tryCount} koraka.", "Kreni ponovo", OnRetryButtonClicked);
+    }
+
+    private IEnumerator PlayMatchAnimation()
+    {
+        return new TweenAnimation()
+        {
+            Update = t =>
+            {
+                var alpha = (float)(1 - t);
+                firstSelectedButton.GetComponent<CanvasGroup>().alpha = alpha;
+                secondsSelectedButton.GetComponent<CanvasGroup>().alpha = alpha;
+                var scale = 1f + (float)(t  / 2);
+                firstSelectedButton.transform.localScale = scale * Vector3.one;
+                secondsSelectedButton.transform.localScale = scale * Vector3.one;
+            }
+        }.StartAndWait();
     }
 
     private void InstantiateTiles(List<int> buttonValues)

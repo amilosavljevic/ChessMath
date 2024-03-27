@@ -69,6 +69,8 @@ public class MemoryController: MonoBehaviour
 
     private IEnumerator PlayMatchAnimation()
     {
+        firstSelectedButton.StartExplosion();
+        secondsSelectedButton.StartExplosion();
         return new TweenAnimation()
         {
             Update = t =>

@@ -10,7 +10,8 @@ public class MemoryTileController : MonoBehaviour
     [SerializeField] private TMP_Text buttonLabel;
     [SerializeField] private Button button;
     [SerializeField] private Image icon;
-
+    [SerializeField] private GameObject explosion;
+    
     private int buttonHiddenValue;
 
     public void Start()
@@ -41,4 +42,9 @@ public class MemoryTileController : MonoBehaviour
     }
 
     public Button Button => button;
+
+    public void StartExplosion()
+    {
+        explosion.SetActive(true);
+    }
 }

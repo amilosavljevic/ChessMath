@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace Code.Pechurka
 {
@@ -9,6 +10,8 @@ namespace Code.Pechurka
         [SerializeField] private GameObject bottomLeft;
         private Vector3 left;
         private Vector3 right;
+        private int points;
+        [SerializeField] private TMP_Text labelPoints;
         
         private void Start()
         {
@@ -24,12 +27,15 @@ namespace Code.Pechurka
             if (pechurka != null) 
             { 
                 Destroy(pechurka.gameObject);
+                points++;
+                labelPoints.text = points.ToString();
             } 
         }
 
         private void FixedUpdate()
         {
             var xOffset = Input.mousePosition.x / Screen.width;
+            Debug.Log(xOffset);
             var newPosition = Vector3.Lerp(left, right, xOffset);
             body2D.MovePosition(newPosition);
         }
